@@ -1,0 +1,71 @@
+diff --git a/resources/usr/bin/openhab-cli b/resources/usr/bin/openhab-cli
+index 6a0fb6a..346f0e1 100755
+--- a/resources/usr/bin/openhab-cli
++++ b/resources/usr/bin/openhab-cli
+@@ -40,11 +40,11 @@ checkRoot() {
+ 
+ # For testing if override functions exist
+ isFunction() {
+-  command -V "$1" 2>/dev/null | grep -qwi function
++  return 1
+ }
+ 
+ checkRunning() {
+-  if [ ! -z "$(pgrep -f "openhab.*java")" ]; then
++  if systemctl is-active openhab.service; then
+     echo "openHAB is running! Please stop the process before continuing." >&2
+     echo ""
+     exit 1
+@@ -65,18 +65,6 @@ confirmAction() {
+   esac
+ }
+ 
+-# Load the default directory paths and any possible custom ones set
+-if [ -r /etc/profile.d/openhab.sh ]; then
+-  . /etc/profile.d/openhab.sh
+-elif [ -r /etc/default/openhab ]; then
+-  . /etc/default/openhab
+-fi
+-
+-# Load the override scripts to replace full commands
+-if [ -r /etc/openhab-cli/command-overrides.sh ]; then
+-  . /etc/openhab-cli/command-overrides.sh
+-fi
+-
+ option="$1"
+ shift
+ 
+@@ -113,23 +101,8 @@ case "$option" in
+     if test "${openHABVersion#*SNAPSHOT}" != "SNAPSHOT"; then
+       buildNumber="($(awk '/build-no/{print $4}' "$OPENHAB_USERDATA/etc/version.properties"))"
+     fi
+-    pid="$(pgrep -f "openhab.*java")"
+-    if [ -n "$pid" ]; then
+-      uid=$(awk '/^Uid:/{print $2}' "/proc/$pid/status")
+-      openHABUser="$(getent passwd "$uid" | awk -F: '{print $1}')"
+-      userStatus="(Active Process $pid)"
+-    elif [ -n "$OPENHAB_USER" ]; then
+-      openHABUser="$OPENHAB_USER"
+-      userStatus="(Environment Variable Set)"
+-    else
+-      openHABUser="$(ls -ld "$OPENHAB_HOME" | awk '{print $3}')"
+-      userStatus="(Owner of home directory)"
+-    fi
+-    groupsList="$(id -Gn "$openHABUser")"
+-    localIP="$(hostname -I | awk '{print $1}')"
++    localIP=127.0.0.1
+     printf "%-12s %s %s\\n\\n" "Version:" "$openHABVersion" "$buildNumber"
+-    printf "%-12s %s %s\\n" "User:" "$openHABUser" "$userStatus"
+-    printf "%-12s %s\\n\\n" "User Groups:" "$groupsList"
+     printf "%-12s %-16s | %-27s | %s\\n" "Directories:" "Folder Name" "Path" "User:Group"
+     printf "%-12s %-16s | %-27s | %s\\n" " " "-----------" "----" "----------"
+     for folderName in "OPENHAB_HOME" "OPENHAB_RUNTIME" "OPENHAB_USERDATA" "OPENHAB_CONF" "OPENHAB_LOGDIR" "OPENHAB_BACKUPS"
+@@ -162,6 +135,8 @@ case "$option" in
+ 
+ 
+   "restart"|"start"|"status"|"stop")
++    systemctl $option openhab.service
++    return
+     # Deamon scripts already exist, encourage the user to use them.
+     if [ "$option" = "status" ];then
+       optionVerb="find the status of"

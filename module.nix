@@ -4,6 +4,21 @@
 with lib;
 let
   cfg = config.services.openhab;
+
+  environment = {
+    OPENHAB_HOME = "${cfg.package}";
+    OPENHAB_CONF = "/var/lib/openhab/conf";
+    OPENHAB_RUNTIME = "${cfg.package}/runtime";
+    OPENHAB_USERDATA = "/var/lib/openhab/userdata";
+    OPENHAB_LOGDIR = "/var/lib/openhab/logs";
+    OPENHAB_BACKUPS = "/var/lib/openhab/backups";
+    OPENHAB_VERSION = "${cfg.package.version}";
+    JAVA_HOME = "${cfg.javaPackage}";
+  };
+
+  cliPackage = pkgs.callPackage ./cli.nix {
+    inherit environment;
+  };
 in
 {
   options = {
@@ -43,6 +58,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [
+      cliPackage
+    ];
+
     systemd.services.openhab = {
       path = [
         cfg.javaPackage
@@ -65,16 +84,8 @@ in
         ExecStart = [ "${cfg.package}/runtime/bin/karaf \${OPENHAB_STARTMODE}" ];
         ExecStop = [ "${cfg.package}/runtime/bin/karaf stop" ];
 
-        Environment = [
-          "OPENHAB_HOME=${cfg.package}"
-          "OPENHAB_CONF=/var/lib/openhab/conf"
-          "OPENHAB_RUNTIME=${cfg.package}/runtime"
-          "OPENHAB_USERDATA=/var/lib/openhab/userdata"
-          "OPENHAB_LOGDIR=/var/lib/openhab/logs"
-          "OPENHAB_BACKUPS=/var/lib/openhab/backups"
-          "OPENHAB_VERSION=${cfg.package.version}"
+        Environment = mapAttrsToList (n: v: "${n}=${v}") environment ++ [
           "OPENHAB_STARTMODE=daemon"
-          "JAVA_HOME=${cfg.javaPackage}"
         ];
         StateDirectory = "openhab";
 
