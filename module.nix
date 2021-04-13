@@ -90,7 +90,9 @@ in
         StateDirectory = "openhab";
 
         SuccessExitStatus = "0 143";
-        RestartSec = 5;
+        RestartSec = 60;
+        StartLimitIntervalSec = 600;
+        StartLimitBurst = 3;
         Restart = "on-failure";
         TimeoutStopSec = 120;
         LimitNOFILE = 102642;
