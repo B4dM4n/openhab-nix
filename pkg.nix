@@ -1,4 +1,5 @@
 { stdenv
+, lib
 , fetchurl
 , writeShellScript
 }:
@@ -51,4 +52,10 @@ stdenv.mkDerivation {
     copyFolder $1 userdata
     EOF
   '';
+
+  meta = with lib; {
+    description = "A vendor and technology agnostic open source automation software for your home";
+    homepage = "https://www.openhab.org";
+    license = licenses.epl20;
+  };
 }
