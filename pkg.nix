@@ -5,7 +5,7 @@
 }:
 
 let
-  version = "3.0.1";
+  version = "3.0.2";
 
   updateScript = fetchurl {
     url = "https://github.com/openhab/openhab-docker/raw/8e1e2767fc36310dbc5ce87db54ac32780cd740a/debian/update";
@@ -17,8 +17,8 @@ stdenv.mkDerivation {
   inherit version;
 
   src = fetchurl {
-    url = "https://bintray.com/openhab/mvn/download_file?file_path=org/openhab/distro/openhab/${version}/openhab-${version}.tar.gz";
-    sha256 = "d04513de479fe37eef6afacd8dc8cf4456d9a96a9fa8e4d728047559a184b5d2";
+    url = "https://openhab.jfrog.io/artifactory/libs-release-local/org/openhab/distro/openhab/${version}/openhab-${version}.tar.gz";
+    sha256 = "CS9A/A/xklG3dCvwDcrWHPkfypNOt9/Y9bdNAlD/6g8=";
   };
 
   sourceRoot = ".";
