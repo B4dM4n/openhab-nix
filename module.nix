@@ -19,6 +19,11 @@ let
   cliPackage = pkgs.callPackage ./cli.nix {
     inherit environment;
   };
+
+  finalPackage =
+    if cfg.withAddons == null
+    then cfg.package
+    else cfg.package.override { inherit (cfg) withAddons; };
 in
 {
   options = {
@@ -37,6 +42,15 @@ in
         defaultText = "pkgs.openjdk11_headless";
         description = "JAVA package to use.";
         type = package;
+      };
+
+      withAddons = mkOption {
+        type = nullOr bool;
+        default = null;
+        description = ''
+          Configure the addon inclusion for the openhab package. When `null` (default) use the
+          package default, otherwise override the `withAddons` package argument.
+        '';
       };
 
       user = mkOption {
@@ -78,11 +92,11 @@ in
         Group = cfg.group;
 
         ExecStartPre = [
-          "${cfg.package}/runtime/bin/copy-dist /var/lib/openhab"
-          "!${cfg.package}/runtime/bin/update"
+          "${finalPackage}/runtime/bin/copy-dist /var/lib/openhab"
+          "!${finalPackage}/runtime/bin/update"
         ];
-        ExecStart = [ "${cfg.package}/runtime/bin/karaf \${OPENHAB_STARTMODE}" ];
-        ExecStop = [ "${cfg.package}/runtime/bin/karaf stop" ];
+        ExecStart = [ "${finalPackage}/runtime/bin/karaf \${OPENHAB_STARTMODE}" ];
+        ExecStop = [ "${finalPackage}/runtime/bin/karaf stop" ];
 
         Environment = mapAttrsToList (n: v: "${n}=${v}") environment ++ [
           "OPENHAB_STARTMODE=daemon"
