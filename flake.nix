@@ -27,8 +27,10 @@
     {
       nixosModule = import ./module.nix { inherit self; };
 
-      packages = forAllSystems ({ system, nixpkgs }: {
+      packages = forAllSystems ({ system, nixpkgs }: rec {
         openhab = nixpkgs.callPackage ./pkg.nix { };
+
+        openhabWithAddons = openhab.override { withAddons = true; };
       });
 
       checks = forAllSystems ({ system, nixpkgs }: {

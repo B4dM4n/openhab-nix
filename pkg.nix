@@ -2,6 +2,7 @@
 , lib
 , fetchurl
 , writeShellScript
+, withAddons ? false
 }:
 
 let
@@ -10,6 +11,11 @@ let
   updateScript = fetchurl {
     url = "https://github.com/openhab/openhab-docker/raw/8e1e2767fc36310dbc5ce87db54ac32780cd740a/debian/update";
     sha256 = "PqSn+bTqmOtg6K2BOssDyp05dqmfj15h1j/RqczWTUA=";
+  };
+
+  addons = fetchurl {
+    url = "https://openhab.jfrog.io/artifactory/libs-release-local/org/openhab/distro/openhab-addons/${version}/openhab-addons-${version}.kar";
+    sha256 = "htd74OncxgUMQ/aIRUabTmTROhigdy8BsX10ROZYRic=";
   };
 in
 stdenv.mkDerivation {
@@ -51,6 +57,8 @@ stdenv.mkDerivation {
     copyFolder $1 conf
     copyFolder $1 userdata
     EOF
+  '' + lib.optionalString withAddons ''
+    ln -s ${addons} $out/addons/openhab-addons-${version}.kar
   '';
 
   meta = with lib; {
