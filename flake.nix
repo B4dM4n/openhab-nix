@@ -12,7 +12,6 @@
     let
       systems = [
         "aarch64-linux"
-        "armv6l-linux"
         "armv7l-linux"
         "i686-linux"
         "x86_64-linux"
@@ -33,27 +32,35 @@
         openhabWithAddons = openhab.override { withAddons = true; };
       });
 
-      checks = forAllSystems ({ system, nixpkgs }: {
-        openhab = nixpkgs.nixosTest ({ pkgs, ... }: {
-          name = "openhab";
+      checks = forAllSystems ({ system, nixpkgs }:
+        let
+          mkTest = withAddons: nixpkgs.nixosTest ({ pkgs, ... }: {
+            name = "openhab";
 
-          machine = { ... }: {
-            imports = [
-              self.nixosModule
-            ];
-            config = {
-              services.openhab = {
-                enable = true;
+            machine = { ... }: {
+              imports = [
+                self.nixosModule
+              ];
+              config = {
+                services.openhab = {
+                  enable = true;
+                  inherit withAddons;
+                };
               };
             };
-          };
 
-          testScript = ''
-            start_all()
+            testScript = ''
+              start_all()
 
-            machine.wait_for_unit("openhab.service")
-          '';
+              machine.wait_for_unit("openhab.service")
+              machine.succeed("openhab-cli status")
+            '';
+          });
+        in
+        {
+          openhab = mkTest false;
+
+          openhab-with-addons = mkTest true;
         });
-      });
     };
 }
