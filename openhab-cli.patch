@@ -64,8 +64,7 @@ index 6a0fb6a..346f0e1 100755
  
  
    "restart"|"start"|"status"|"stop")
-+    systemctl $option openhab.service
-+    return
++    exec systemctl $option openhab.service
      # Deamon scripts already exist, encourage the user to use them.
      if [ "$option" = "status" ];then
        optionVerb="find the status of"
