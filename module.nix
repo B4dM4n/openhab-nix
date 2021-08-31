@@ -38,8 +38,8 @@ in
       };
 
       javaPackage = mkOption {
-        default = pkgs.openjdk11_headless;
-        defaultText = "pkgs.openjdk11_headless";
+        default = pkgs.openjdk11;
+        defaultText = "pkgs.openjdk11";
         description = "JAVA package to use.";
         type = package;
       };
